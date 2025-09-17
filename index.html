@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UhuruOs Privacy Distro</title>
+  <style>
+    :root{
+      /* Kenyan palette */
+      --k-black: #000000;
+      --k-red:   #CE1126;
+      --k-green: #006233;
+      --k-white: #ffffff;
+
+      /* derived */
+      --accent: var(--k-green);
+      --muted-bg: #f7f7f7;
+      --text: #111;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background-color: var(--muted-bg);
+      margin: 0;
+      color: var(--text);
+      scroll-behavior: smooth;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Nav: subtle Kenyan gradient bar */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: linear-gradient(90deg, var(--k-black) 0%, var(--k-red) 50%, var(--k-green) 100%);
+      color: var(--k-white);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 0;
+      padding: 0.65rem 1rem;
+      align-items:center;
+    }
+
+    nav ul li a {
+      color: var(--k-white);
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      transition: background 160ms ease, transform 120ms ease;
+      background: transparent;
+    }
+
+    nav ul li a:hover{
+      background: rgba(255,255,255,0.09);
+      transform: translateY(-2px);
+    }
+
+    /* Hero Slider */
+    .slider {
+      position: relative;
+      height: 640px;
+      overflow: hidden;
+      color: var(--k-white);
+      text-align: center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .slides { position: relative; height:100%; width:100%; }
+
+    .slide {
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      background-blend-mode: multiply;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      transition: opacity 900ms ease-in-out;
+    }
+
+    .slide.active { opacity:1; z-index:1; }
+
+    .slide-content {
+      max-width:1100px;
+      padding: 2rem;
+      text-align:center;
+      text-shadow: 0 6px 24px rgba(0,0,0,0.55);
+    }
+
+    .slide-content h1 {
+      font-size: clamp(2rem, 4.5vw, 3.6rem);
+      margin: 0;
+      display:inline-flex;
+      align-items:center;
+      gap:0.8rem;
+      letter-spacing: -0.02em;
+    }
+
+    .flag-badge{
+      display:inline-block;
+      width:52px;
+      height:28px;
+      border-radius:4px;
+      overflow:hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border:2px solid rgba(255,255,255,0.08);
+    }
+    /* simple stylized Kenyan stripes */
+    .flag-badge > span{ display:block; height:33.33%; }
+    .flag-badge .f1{ background: var(--k-black); }
+    .flag-badge .f2{ background: var(--k-red); }
+    .flag-badge .f3{ background: var(--k-green); }
+
+    .slide-content p {
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      margin-top: 0.8rem;
+      color: rgba(255,255,255,0.95);
+    }
+
+    .slider-controls{
+      position:absolute;
+      bottom:22px;
+      width:100%;
+      text-align:center;
+      z-index:5;
+    }
+
+    .slider-controls button{
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--k-white);
+      font-size: 1.25rem;
+      padding:0.45rem 0.8rem;
+      margin:0 6px;
+      border-radius:999px;
+      cursor:pointer;
+      backdrop-filter: blur(2px);
+    }
+    .slider-controls button:hover{ background: rgba(255,255,255,0.12); transform:translateY(-2px); }
+
+    /* Main content */
+    main {
+      max-width: 920px;
+      margin: 2.25rem auto;
+      padding: 0 1.25rem 3rem;
+    }
+
+    section { margin-bottom:1.75rem; scroll-margin-top:84px; }
+
+    h2,h3 { color: var(--accent); margin-top:0; }
+
+    .card {
+      background: var(--k-white);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 6px 22px rgba(12,12,12,0.03);
+    }
+
+    .features ul{
+      text-align:left;
+      margin:0.5rem auto;
+      max-width:780px;
+      padding-left:1.15rem;
+    }
+
+    blockquote{
+      border-left: 4px solid var(--k-red);
+      padding-left:1rem;
+      color:#222;
+      margin:0.8rem 0;
+      font-style:italic;
+      background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+    }
+
+    pre, code{
+      background:#f3f4f6;
+      padding:0.9rem;
+      border-radius:8px;
+      overflow:auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+    }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(180deg, rgba(0,122,51,0.06), rgba(206,17,38,0.03));
+      padding: 1.75rem;
+      border-radius: 10px;
+      text-align:center;
+    }
+
+    .btn {
+      display:inline-block;
+      padding: 0.85rem 1.6rem;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:800;
+      color: var(--k-white);
+      background: linear-gradient(90deg, var(--k-green), #008a40);
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+    .btn.secondary {
+      background: linear-gradient(90deg, var(--k-red), #b00f20);
+      margin-left:0.6rem;
+    }
+
+    /* Footer */
+    footer{
+      text-align:center;
+      padding:1.25rem;
+      color:#4a4a4a;
+      font-size:0.92rem;
+      margin-top:2rem;
+          background: linear-gradient(90deg, var(--k-black) 0%, var(--k-red) 50%, var(--k-green) 100%);
+      color: var(--k-white);
+    }
+
+    /* Responsive */
+    @media (max-width:720px){
+      nav ul{ gap:0.6rem; padding:0.6rem; font-size:0.95rem; }
+      .flag-badge{ width:44px; height:24px; }
+      .slider{ height:520px; }
+      main{ padding:0 0.9rem; }
+    }
+    
+    /*desktop slider*/
+    .screenshots {
+        margin: 3rem auto;
+        text-align: center;
+        max-width: 900px;
+      }
+
+      .gallery-slider {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        margin-top: 1.5rem;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: #000;
+      }
+
+      .gallery-slides {
+        height: 100%;
+        width: 100%;
+        position: relative;
+      }
+
+      .gallery-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .gallery-slide img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .gallery-slide.active {
+        opacity: 1;
+        z-index: 1;
+      }
+
+      .gallery-controls {
+        position: absolute;
+        bottom: 15px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .gallery-controls button {
+        background-color: rgba(0,0,0,0.6);
+        color: white;
+        font-size: 1.5rem;
+        border: none;
+        padding: 0.5rem 1rem;
+        margin: 0 10px;
+        cursor: pointer;
+        border-radius: 50%;
+      }
+
+      .gallery-controls button:hover {
+        background-color: rgba(0,0,0,0.8);
+      }
+
+    #developer {
+      padding: 60px 20px;
+      text-align: center;
+      background-color: #000;
+    }
+
+    #developer h2 {
+      font-size: 2.5em;
+      color: #fff;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #fff;
+    }
+
+    .profile-card {
+      max-width: 500px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 15px;
+      background: #111;
+      border: 2px solid #222;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    /* Kenyan color border glow effect */
+    .profile-card::before {
+      content: "";
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      border-radius: 15px;
+      background: linear-gradient(90deg, black, red, green, white, red, green, black);
+      background-size: 400% 400%;
+      animation: borderGlow 6s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes borderGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .profile-card img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid red;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px green;
+    }
+
+    .profile-card h3 {
+      font-size: 1.8em;
+      color: #fff;
+      margin: 10px 0;
+    }
+
+    .profile-card p {
+      font-size: 1.1em;
+      color: #aaa;
+      line-height: 1.6em;
+    }
+
+    .social-links {
+      margin-top: 20px;
+    }
+
+    .social-links a {
+      display: inline-block;
+      margin: 0 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: white;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .social-links a:nth-child(1) { background: black; }
+    .social-links a:nth-child(2) { background: red; }
+    .social-links a:nth-child(3) { background: green; }
+
+    .social-links a:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+<nav>
+  <ul>
+    <li><a href="#home">Home</a></li>
+    <li><a href="#privacy">Privacy</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#community">Community</a></li>
+    <li><a href="#screenshots">Screenshots</a></li>
+    <li><a href="#download">Download</a></li>
+    
+    <li><a href="#donate">Donate</a></li>
+    <li><a href="#developer">Developer</a></li>
+  </ul>
+</nav>
+
+
+ <!-- Hero Slider -->
+<header class="slider" id="home">
+  <div class="slides">
+
+    <!-- slide 1 -->
+    <div class="slide active"
+         style="background-image:
+           linear-gradient(135deg,
+             rgba(0,0,0,0.62) 0%,
+             rgba(206,17,38,0.20) 45%,
+             rgba(0,98,51,0.17) 85%),
+           url('images/hacker-abstract-1.png');">
+      <div class="slide-content">
+        <h1>
+          <span class="flag-badge" aria-hidden="true">
+            <span class="f1"></span><span class="f2"></span><span class="f3"></span>
+          </span>
+          UhuruOs
+        </h1>
+        <p>A privacy-first Debian distro — secure defaults, community driven.</p>
+      </div>
+    </div>
+
+    <!-- slide 2 -->
+    <div class="slide"
+         style="background-image:
+           linear-gradient(180deg,
+             rgba(0,0,0,0.56),
+             rgba(206,17,38,0.14) 40%,
+             rgba(0,98,51,0.12) 80%),
+           url('images/hacker-abstract-2.png');">
+      <div class="slide-content">
+        <h1>
+          <span class="flag-badge" aria-hidden="true">
+            <span class="f1"></span><span class="f2"></span><span class="f3"></span>
+          </span>
+          Privacy First
+        </h1>
+        <p>Minimal telemetry · no corporate tracking · secure defaults.</p>
+      </div>
+    </div>
+
+    <!-- slide 3 -->
+    <div class="slide"
+         style="background-image:
+           linear-gradient(135deg,
+             rgba(0,0,0,0.6),
+             rgba(0,98,51,0.20) 45%,
+             rgba(206,17,38,0.12) 85%),
+           url('images/hacker-abstract-3.png');">
+      <div class="slide-content">
+        <h1>
+          <span class="flag-badge" aria-hidden="true">
+            <span class="f1"></span><span class="f2"></span><span class="f3"></span>
+          </span>
+          Hardened & Community Driven
+        </h1>
+        <p>Inspired — built for security, privacy and openness.</p>
+      </div>
+    </div>
+
+    <!-- slide 4 (extra mood) -->
+    <div class="slide"
+         style="background-image:
+           linear-gradient(135deg,
+             rgba(0,0,0,0.6),
+             rgba(206,17,38,0.18) 40%,
+             rgba(0,98,51,0.15) 80%),
+           url('images/hacker-abstract-4.png');">
+      <div class="slide-content">
+        <h1>
+          <span class="flag-badge" aria-hidden="true">
+            <span class="f1"></span><span class="f2"></span><span class="f3"></span>
+          </span>
+          Digital Freedom
+        </h1>
+        <p>Power to the people · Open source · Built in Kenya 🌍</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Controls -->
+  <div class="slider-controls">
+    <button onclick="prevSlide()">❮</button>
+    <button onclick="nextSlide()">❯</button>
+  </div>
+</header>
+
+
+  <main>
+    <section id="privacy" class="card">
+      <h2>🔒 Why Privacy Matters</h2>
+      <p>UhuruOs your digital life private by default. No telemetry, strong cryptographic defaults, and carefully chosen packages that respect user freedom.</p>
+    </section>
+
+    <section id="features" class="card">
+      <h3>✔ Key Features</h3>
+      <ul>
+        <li>Based on stable Debian with timely security patches</li>
+        <li>Hardened defaults: firewall, kernel hardening and minimal attack surface</li>
+        <li>No telemetry; privacy tools preinstalled (Tor, VPN tooling, secure messaging)</li>
+        <li>Lightweight desktop & power-user friendly configuration</li>
+      </ul>
+    </section>
+
+    <section id="community" class="card">
+      <h3>🌍 Community Voices</h3>
+      <blockquote>
+        "UhuruOs gives me control over my data while staying simple to use — feels like the best of both worlds."
+        <br>– a community contributor
+      </blockquote>
+      <div style="margin-top:0.8rem;">
+        <a class="btn" href="#download">Download ISO</a>
+        <a class="btn secondary" href="https://github.com/uhurulinux" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </section>
+    <section id="screenshots" class="screenshots">
+      <h2>🖼️ Desktop Preview</h2>
+      <p>Take a look at UhuruOs in action. A clean, modern, and privacy-respecting desktop.</p>
+
+      <div class="gallery-slider">
+        <div class="gallery-slides">
+          <div class="gallery-slide active">
+            <img src="desktop1.png" alt="Uhuru Linux Desktop 1">
+          </div>
+          <div class="gallery-slide">
+            <img src="desktop2.png" alt="Uhuru Linux Desktop 2">
+          </div>
+          <div class="gallery-slide">
+            <img src="desktop3.png" alt="Uhuru Linux Desktop 3">
+          </div>
+        </div>
+        <div class="gallery-controls">
+          <button onclick="prevGallery()">❮</button>
+          <button onclick="nextGallery()">❯</button>
+        </div>
+      </div>
+    </section>
+
+ 
+<!--
+    <section id="install" class="card">
+      <h2>🖥️ How to Install UhuruOs</h2>
+      <p>Quick install — download, create a bootable USB, then follow the guided installer.</p>
+      <pre><code># 1. Download ISO
+wget https://github/uhuruos/uhuru.iso
+
+# 2. Create Bootable USB (be careful to choose the correct target)
+sudo dd if=uhuru.iso of=/dev/sdX bs=4M status=progress && sync
+
+# 3. Boot & Install
+# - Reboot and select USB in BIOS/UEFI
+# - Follow the guided installer
+# - Choose disk encryption for best privacy
+</code></pre>
+    </section> -->
+  <section id="developer">
+    <h2>Developer Profile</h2>
+    <div class="profile-card">
+      <img src="anon-avatar.png" alt="ro0t4ro0t Developer">
+      <h3>ro0t4ro0t</h3>
+      <p>
+        Privacy advocate and open-source contributor.<br>
+        No names, no faces — only code and commitment.<br>
+        Dedicated to protecting digital freedom.
+      </p>
+      <div class="social-links">
+        <a href="https://github.com/uhuruos" target="_blank">GitHub</a>
+        <a href="https://t.me/uhuruos" target="_blank">Telegram</a>
+        <a href="mailto:ro0t4ro0t@protonmail.com">Email</a>
+      </div>
+    </div>
+  </section>
+        <section id="donate" class="donate">
+      <h2>💚 Support Uhuru Linux</h2>
+ <p>
+  UhuruOs is built with ❤️ by the community, for the community — 100% free and open-source.  
+  We refuse ads, spyware, and corporate influence, but that also means we rely entirely on your support.  
+  Every donation helps us keep Uhuru Linux secure, fast, and privacy-focused for everyone.  
+  If you believe in digital freedom, please consider donating with Monero (XMR) or Bitcoin (BTC).  
+  Even the smallest contribution makes a big difference 🙏.
+</p>
+
+
+      <div class="donation-options">
+        <!-- Monero -->
+        <div class="donation-card">
+          <h3>Monero (XMR)</h3>
+          <img src="xmr-qr.png" alt="Monero QR Code">
+          <p class="wallet">Address:</p>
+          <code id="xmr-address">44Affq5kSiGBoZ...yourXMRaddressHere</code>
+          <button onclick="copyAddress('xmr-address')">📋 Copy</button>
+        </div>
+
+        <!-- Bitcoin -->
+        <div class="donation-card">
+          <h3>Bitcoin (BTC)</h3>
+          <img src="btc-qr.png" alt="Bitcoin QR Code">
+          <p class="wallet">Address:</p>
+          <code id="btc-address">bc1qxy2kgdygjrsqtzq2n0yrf...yourBTCaddressHere</code>
+          <button onclick="copyAddress('btc-address')">📋 Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .donate {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, #006600, #ff0000, #000, #ffffff);
+        color: white;
+      }
+
+      .donate h2 {
+        margin-bottom: 1rem;
+      }
+
+      .donation-options {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .donation-card {
+        background: white;
+        color: #333;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        width: 280px;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      }
+
+      .donation-card h3 {
+        margin-bottom: 1rem;
+        color: #28a745;
+      }
+
+      .donation-card img {
+        max-width: 150px;
+        margin-bottom: 1rem;
+      }
+
+      .donation-card code {
+        display: block;
+        word-wrap: break-word;
+        font-size: 0.85rem;
+        background: #f9f9f9;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+      }
+
+      .donation-card button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+      }
+
+      .donation-card button:hover {
+        background-color: #218838;
+      }
+    </style>
+
+    <script>
+      function copyAddress(id) {
+        const addressElement = document.getElementById(id);
+        const address = addressElement.innerText;
+        navigator.clipboard.writeText(address).then(() => {
+          alert("✅ Address copied to clipboard!");
+        });
+      }
+    </script>
+
+  </main>
+
+  <footer>
+    &copy; 2025 UhuruOs Project — Privacy · Freedom · Security
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = Array.from(document.querySelectorAll('.slide'));
+
+    function showSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+      currentSlide = index;
+    }
+
+    function nextSlide() { showSlide((currentSlide + 1) % slides.length); }
+    function prevSlide() { showSlide((currentSlide - 1 + slides.length) % slides.length); }
+
+    // auto-rotate
+    let rot = setInterval(nextSlide, 6000);
+    // pause on hover
+    document.querySelector('.slider').addEventListener('mouseenter', () => clearInterval(rot));
+    document.querySelector('.slider').addEventListener('mouseleave', () => rot = setInterval(nextSlide, 6000));
+    
+    // Desktop Gallery Slider
+      let galleryIndex = 0;
+      const gallerySlides = document.querySelectorAll('.gallery-slide');
+
+      function showGallerySlide(index) {
+        gallerySlides.forEach((slide, i) => {
+          slide.classList.remove('active');
+          if (i === index) slide.classList.add('active');
+        });
+        galleryIndex = index;
+      }
+
+      function nextGallery() {
+        showGallerySlide((galleryIndex + 1) % gallerySlides.length);
+      }
+
+      function prevGallery() {
+        showGallerySlide((galleryIndex - 1 + gallerySlides.length) % gallerySlides.length);
+      }
+
+      setInterval(nextGallery, 8000); // auto cycle every 8s
+  </script>
+</body>
+</html>
+
